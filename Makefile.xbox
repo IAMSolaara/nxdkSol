@@ -1,0 +1,12 @@
+XBE_TITLE = nxdkSol
+GEN_XISO = $(XBE_TITLE).iso
+SRCS = $(CURDIR)/main.c
+NXDK_DIR = /opt/nxdk
+NXDK_SDL = y
+XPAD_VIBRA_STARTUP = y
+include $(NXDK_DIR)/Makefile
+
+TARGET += $(OUTPUT_DIR)/res
+$(GEN_XISO): $(OUTPUT_DIR)/res
+$(OUTPUT_DIR)/res: $(CURDIR)/res $(OUTPUT_DIR)
+	$(VE)cp -rf '$<' '$@'

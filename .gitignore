@@ -1,6 +1,8 @@
+*.iso
 a.out
 *.exe
 *.pdb
 *.d
 *.obj
+*.lib
 bin
