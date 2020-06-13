@@ -10,6 +10,9 @@
 #include <SDL_image.h>
 #include <SDL_gamecontroller.h>
 
+//project includes
+#include "linkedlist.h"
+
 static void printSDLErrorAndReboot(void);
 
 static void printIMGErrorAndReboot(void);
@@ -128,14 +131,46 @@ void game(void){
 	};
 	SDL_Texture* stackTexture = IMG_LoadTexture(renderer, "D:\\res\\back.png");
 
+	SDL_Texture* cursorTexture = IMG_LoadTexture(renderer, "D:\\res\\cursor.png");
+
 	SDL_Rect stackRect = {16, 16, 64, 96};
 	SDL_Rect stackOutputRect = {96, 16, 64, 96};
-	SDL_Rect cardRect = {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 64, 96};
 
 	SDL_Rect winPile1 = {566, 16, 64, 96};
 	SDL_Rect winPile2 = {492, 16, 64, 96};
 	SDL_Rect winPile3 = {418, 16, 64, 96};
 	SDL_Rect winPile4 = {344, 16, 64, 96};
+
+	SDL_Rect field1 = {88, 128, 64, 96};
+	SDL_Rect field2 = {168, 128, 64, 96};
+	SDL_Rect field3 = {248, 128, 64, 96};
+	SDL_Rect field4 = {328, 128, 64, 96};
+	SDL_Rect field5 = {408, 128, 64, 96};
+	SDL_Rect field6 = {488, 128, 64, 96};
+
+	node* stack = addnode(NULL, 1, 12);
+	
+	SDL_Rect choiceRects[2][6] = 
+	{
+		{
+			stackRect,
+			stackOutputRect,
+			winPile4,
+			winPile3,
+			winPile2,
+			winPile1
+		},
+		{
+			field1,
+			field2,
+			field3,
+			field4,
+			field5,
+			field6
+		}
+	};
+
+	int choice[] = {0,0};
 
 	SDL_Texture* bgTexture = IMG_LoadTexture(renderer, 
 #ifdef NXDK
@@ -152,11 +187,13 @@ void game(void){
 	printf("%i joysticks were found.\n\n", SDL_NumJoysticks() );
 #endif
 
+	SDL_Texture* stackOutTexture = NULL; 
+
 	SDL_GameController* joystick;
 	SDL_GameControllerEventState(SDL_ENABLE);
 	joystick = SDL_GameControllerOpen(0);
 
-	int choice = 0;
+	//int choice = 0;
 
 	char done = 0;
 	while (!done) {
@@ -167,13 +204,27 @@ void game(void){
 					break;
 				case SDL_CONTROLLERBUTTONDOWN:
 					switch (event.cbutton.button) {
+						case SDL_CONTROLLER_BUTTON_A:
+							switch (choice[1]) {
+								case 0:
+									if (choice[0] == 0) stackOutTexture = cards[2][5];
+							}
+							break;
+						case SDL_CONTROLLER_BUTTON_DPAD_UP:
+							if (choice[0] == 0) choice[0] = 1;
+							else choice[0]--;
+							break;
+						case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+							if (choice[0] == 1) choice[0] = 0;
+							else choice[0]++;
+							break;
 						case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-							cardRect.x -= 1;
+							if (choice[1] == 0) choice[1] = 5;
+							else choice[1]--;
 							break;
 						case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-							cardRect.x += 1;
-							break;
-						case SDL_CONTROLLER_BUTTON_A:
+							if (choice[1] == 5) choice[1] = 0;
+							else choice[1]++;
 							break;
 					}
 					break;
@@ -181,25 +232,15 @@ void game(void){
 					break;
 			}
 		}
-/*		SDL_SetRenderDrawColor(renderer, 255,255,255,255);
-		SDL_RenderFillRect(renderer, &scrRect);
-*/
-
-		/*
-		switch (choice) {
-			case 0:
-				break;
-
-		}
-		*/
 		SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
-		SDL_RenderCopy(renderer, cards[3][11],  NULL, &cardRect);
+
 		SDL_RenderCopy(renderer, stackTexture,  NULL, &stackRect);
-		SDL_RenderCopy(renderer, cards[3][12],  NULL, &stackOutputRect);
+		if (stackOutTexture) SDL_RenderCopy(renderer, stackOutTexture,  NULL, &stackOutputRect);
 		SDL_RenderCopy(renderer, cards[0][0],  NULL, &winPile1);
 		SDL_RenderCopy(renderer, cards[1][0],  NULL, &winPile2);
 		SDL_RenderCopy(renderer, cards[2][0],  NULL, &winPile3);
 		SDL_RenderCopy(renderer, cards[3][0],  NULL, &winPile4);
+		SDL_RenderCopy(renderer, cursorTexture, NULL, &choiceRects[choice[0]][choice[1]]);
 		SDL_RenderPresent(renderer);
 		SDL_UpdateWindowSurface(window);
 
